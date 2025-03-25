@@ -6,7 +6,6 @@ certbot_auto_renew_hour: "3"
 certbot_auto_renew_minute: "30"
 certbot_auto_renew_options: "--quiet"
 
-certbot_expand: false
 certbot_testmode: false
 certbot_hsts: false
 
@@ -16,6 +15,7 @@ certbot_create_if_missing: false
 certbot_create_method: standalone
 certbot_create_extra_args: ""
 certbot_admin_email: email@example.com
+certbot_expand: false
 
 # Default webroot, overwritten by individual per-cert webroot directories
 certbot_webroot: /var/www/letsencrypt
