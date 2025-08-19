@@ -26,7 +26,7 @@ By default, this role configures a cron job to run under the provided user accou
 
 ### Automatic Certificate Generation
 
-Currently the `standalone` and `webroot` method are supported for generating new certificates using this role.
+Currently the `standalone`, `webroot`, and `dns-cloudflare` methods are supported for generating new certificates using this role.
 
 **For a complete example**: see the fully functional test playbook in [molecule/default/playbook-standalone-nginx-aws.yml](molecule/default/playbook-standalone-nginx-aws.yml).
 
@@ -36,7 +36,7 @@ Set `certbot_create_if_missing` to `yes` or `True` to let this role generate cer
 
     certbot_create_method: standalone
 
-Set the method used for generating certs with the `certbot_create_method` variable — current allowed values are: `standalone` or `webroot`.
+Set the method used for generating certs with the `certbot_create_method` variable — current allowed values are: `standalone`, `webroot`, or `dns-cloudflare`.
 
     certbot_testmode: false
 
@@ -85,6 +85,25 @@ This install method is currently experimental and may or may not work across all
 #### Webroot Certificate Generation
 
 When using the `webroot` creation method, a `webroot` item has to be provided for every `certbot_certs` item, specifying which directory to use for the authentication. Also, make sure your webserver correctly delivers contents from this directory.
+
+#### DNS-01 Challenge with Cloudflare
+
+When using the `dns-cloudflare` creation method, you need to configure Cloudflare DNS credentials:
+
+    certbot_cloudflare_email: "your-email@example.com"
+    certbot_cloudflare_api_key: "your-global-api-key"
+    # OR use API token instead (recommended):
+    certbot_cloudflare_api_token: "your-api-token"
+    certbot_cloudflare_propagation_seconds: 10
+
+You can use either the email + Global API Key combination OR an API token. The API token method is recommended as it's more secure and allows for more granular permissions.
+
+For API token setup:
+1. Go to Cloudflare Dashboard → My Profile → API Tokens
+2. Create a token with `Zone:DNS:Edit` permissions for the zones you want certificates for
+3. Set the `certbot_cloudflare_api_token` variable with this token
+
+This method supports wildcard certificates and doesn't require your server to be publicly accessible on ports 80/443.
 
 ### Source Installation from Git
 

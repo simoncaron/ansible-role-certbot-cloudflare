@@ -15,3 +15,9 @@
   file:
     path: "{{ certbot_script }}"
     mode: 0755
+
+- name: Install certbot-dns-cloudflare plugin via pip.
+  pip:
+    name: certbot-dns-cloudflare
+    state: present
+  when: certbot_create_method == 'dns-cloudflare'
