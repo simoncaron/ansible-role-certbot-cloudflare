@@ -4,6 +4,12 @@
     name: "{{ certbot_package }}"
     state: present
 
+- name: Install Certbot Cloudflare DNS plugin.
+  package:
+    name: "{{ certbot_dns_cloudflare_package }}"
+    state: present
+  when: certbot_create_method == 'dns-cloudflare'
+
 - name: Set Certbot script variable.
   set_fact:
     certbot_script: "{{ certbot_package }}"

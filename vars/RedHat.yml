@@ -1,4 +1,4 @@
 ---
 certbot_package: certbot
 certbot_dns_cloudflare_package: python3-certbot-dns-cloudflare
-certbot_cron_package: cron
+certbot_cron_package: cronie

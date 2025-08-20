@@ -29,6 +29,11 @@
     name: certbot
     classic: true
 
+- name: Install certbot-dns-cloudflare plugin via snap.
+  snap:
+    name: certbot-dns-cloudflare
+  when: certbot_create_method == 'dns-cloudflare'
+
 - name: Symlink certbot into place.
   file:
     src: /snap/bin/certbot

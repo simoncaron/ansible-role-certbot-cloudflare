@@ -1,4 +1,9 @@
 ---
+- name: Install cron package (if not present).
+  package:
+    name: "{{ certbot_cron_package }}"
+    state: present
+
 - name: Add cron job for certbot renewal (if configured).
   cron:
     name: Certbot automatic renewal.
