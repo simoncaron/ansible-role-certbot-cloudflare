@@ -89,7 +89,7 @@
   vars:
     certbot_admin_email: https@servercheck.in
     certbot_create_if_missing: true
-    certbot_create_standalone_stop_services: []
+    certbot_create_stop_services: []
     certbot_certs:
       - name: certbot-test.servercheck.in
         domains:

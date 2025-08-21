@@ -27,8 +27,8 @@
     group: root
     mode: 0750
   when:
-    - certbot_create_standalone_stop_services is defined
-    - certbot_create_standalone_stop_services
+    - certbot_create_stop_services is defined
+    - certbot_create_stop_services
 
 - name: Create post hook to start services.
   template:
@@ -38,8 +38,8 @@
     group: root
     mode: 0750
   when:
-    - certbot_create_standalone_stop_services is defined
-    - certbot_create_standalone_stop_services
+    - certbot_create_stop_services is defined
+    - certbot_create_stop_services
 
 - name: Check if domains have changed
   block:
