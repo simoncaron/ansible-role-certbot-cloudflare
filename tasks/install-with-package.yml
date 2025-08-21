@@ -8,7 +8,6 @@
   package:
     name: "{{ certbot_dns_cloudflare_package }}"
     state: present
-  when: certbot_create_method == 'dns-cloudflare'
 
 - name: Set Certbot script variable.
   set_fact:
