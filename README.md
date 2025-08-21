@@ -6,15 +6,12 @@ Installs and configures Certbot (for Let's Encrypt).
 
 ## Requirements
 
-If installing from source, Git is required. You can install Git using the `geerlingguy.git` role.
-
-Generally, installing from source (see section `Source Installation from Git`) leads to a better experience using Certbot and Let's Encrypt, especially if you're using an older OS release.
 
 ## Role Variables
 
     certbot_install_method: package
 
-Controls how Certbot is installed. Available options are 'package', 'snap', and 'source'.
+Controls how Certbot is installed. Available options are 'package' and 'snap'.
 
     certbot_auto_renew: true
     certbot_auto_renew_user: "{{ ansible_user | default(lookup('env', 'USER')) }}"
@@ -26,17 +23,12 @@ By default, this role configures a cron job to run under the provided user accou
 
 ### Automatic Certificate Generation
 
-Currently the `standalone`, `webroot`, and `dns-cloudflare` methods are supported for generating new certificates using this role.
-
-**For a complete example**: see the fully functional test playbook in [molecule/default/playbook-standalone-nginx-aws.yml](molecule/default/playbook-standalone-nginx-aws.yml).
+This role supports generating new certificates using the `dns-cloudflare` method with Cloudflare DNS-01 challenge.
 
     certbot_create_if_missing: false
 
 Set `certbot_create_if_missing` to `yes` or `True` to let this role generate certs. 
 
-    certbot_create_method: standalone
-
-Set the method used for generating certs with the `certbot_create_method` variable — current allowed values are: `standalone`, `webroot`, or `dns-cloudflare`.
 
     certbot_testmode: false
 
@@ -52,27 +44,15 @@ The email address used to agree to Let's Encrypt's TOS and subscribe to cert-rel
 
     certbot_certs: []
       # - email: janedoe@example.com
-      #   webroot: "/var/www/html"
       #   domains:
       #     - example1.com
       #     - example2.com
       # - domains:
       #     - example3.com
 
-A list of domains (and other data) for which certs should be generated. You can add an `email` key to any list item to override the `certbot_admin_email`. When using the `webroot` creation method, a `webroot` item has to be provided, specifying which directory to use for the authentication. Make sure your webserver correctly delivers contents from this directory.
+A list of domains (and other data) for which certs should be generated using Cloudflare DNS-01 challenge. You can add an `email` key to any list item to override the `certbot_admin_email`.
 
-    certbot_create_command: "{{ certbot_script }} certonly --standalone --noninteractive --agree-tos --email {{ cert_item.email | default(certbot_admin_email) }} -d {{ cert_item.domains | join(',') }}"
-
-The `certbot_create_command` defines the command used to generate the cert. See the full default command inside `defaults/main.yml` for a full example—and you can easily add in extra arguments that are not in the default command with the `certbot_create_extra_args` variable.
-
-#### Standalone Certificate Generation
-
-    certbot_create_standalone_stop_services:
-      - nginx
-
-Services that should be stopped while `certbot` runs it's own standalone server on ports 80 and 443. If you're running Apache, set this to `apache2` (Ubuntu), or `httpd` (RHEL), or if you have Nginx on port 443 and something else on port 80 (e.g. Varnish, a Java app, or something else), add it to the list so it is stopped when the certificate is generated.
-
-These services will only be stopped the first time a new cert is generated.
+The `certbot_create_command` defines the command used to generate certificates using Cloudflare DNS-01 challenge. See the full default command inside `defaults/main.yml` for a full example—and you can easily add in extra arguments that are not in the default command with the `certbot_create_extra_args` variable.
 
 ### Snap Installation
 
@@ -82,13 +62,9 @@ Setting `certbot_install_method: snap` configures this role to install Certbot v
 
 This install method is currently experimental and may or may not work across all Linux distributions.
 
-#### Webroot Certificate Generation
+### DNS-01 Challenge with Cloudflare
 
-When using the `webroot` creation method, a `webroot` item has to be provided for every `certbot_certs` item, specifying which directory to use for the authentication. Also, make sure your webserver correctly delivers contents from this directory.
-
-#### DNS-01 Challenge with Cloudflare
-
-When using the `dns-cloudflare` creation method, you need to configure Cloudflare DNS credentials:
+You need to configure Cloudflare DNS credentials:
 
     certbot_cloudflare_email: "your-email@example.com"
     certbot_cloudflare_api_key: "your-global-api-key"
@@ -105,19 +81,13 @@ For API token setup:
 
 This method supports wildcard certificates and doesn't require your server to be publicly accessible on ports 80/443.
 
-### Source Installation from Git
+### Service Management During Certificate Generation
 
-You can install Certbot from it's Git source repository if desired with `certbot_install_method: source`. This might be useful in several cases, but especially when older distributions don't have Certbot packages available (e.g. CentOS < 7, Ubuntu < 16.10 and Debian < 8).
+    certbot_create_stop_services:
+      - nginx
 
-    certbot_repo: https://github.com/certbot/certbot.git
-    certbot_version: master
-    certbot_keep_updated: true
+Services that can be stopped during certificate generation if needed. While DNS-01 challenge doesn't require stopping services (since it doesn't use ports 80/443), you may want to restart services after certificate deployment using deploy hooks.
 
-Certbot Git repository options. If installing from source, the configured `certbot_repo` is cloned, respecting the `certbot_version` setting. If `certbot_keep_updated` is set to `yes`, the repository is updated every time this role runs.
-
-    certbot_dir: /opt/certbot
-
-The directory inside which Certbot will be cloned.
 
 ### Wildcard Certificates
 
@@ -147,7 +117,7 @@ See other examples in the `tests/` directory.
 
 _Note: You can have this role automatically generate certificates; see the "Automatic Certificate Generation" documentation above._
 
-You can manually create certificates using the `certbot` (or `certbot-auto`) script (use `letsencrypt` on Ubuntu 16.04, or use `/opt/certbot/certbot-auto` if installing from source/Git. Here are some example commands to configure certificates with Certbot:
+You can manually create certificates using the `certbot` (or `certbot-auto`) script (use `letsencrypt` on Ubuntu 16.04). Here are some example commands to configure certificates with Certbot:
 
     # Automatically add certs for all Apache virtualhosts (use with caution!).
     certbot --apache
@@ -171,7 +141,7 @@ By default, this role adds a cron job that will renew all installed certificates
 
 You can test the auto-renewal (without actually renewing the cert) with the command:
 
-    /opt/certbot/certbot-auto renew --dry-run
+    certbot renew --dry-run
 
 See full documentation and options on the [Certbot website](https://certbot.eff.org/).
 
